@@ -1,0 +1,30 @@
+# Study Core Javascript
+
+스터디 : 도서 [코어 자바스크립트](https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=206513031)로 진행하는 사내 스터디 발표 자료 공유 및 정리를 위한 저장소입니다.
+
+## 📁 Add Files
+
+- N주차에 N_week 디렉토리를 생성합니다.
+- 해당 디렉토리의 README.md를 작성합니다. (예시 파일은 1주차 디렉토리 참고)
+- 발표 자료 파일은 자유롭게 저장하되 디렉토리는 따로 관리합니다.
+
+```tree
+└─01_week
+    ├─part01
+    └─part03
+```
+
+part01 : 1-1 ~ 1-4 (데이터 타입과 변수)  
+part02 : 1-5 ~ 1-6 (불변객체와 undefined, null)  
+part03 : 2-1 ~ 2-3-1 (실행컨텍스트와 호이스팅)  
+part04 : 2-3-2 (스코프와 스코프 체인)  
+part05 : 2-4 ~ 3 (this)  
+part06 : 4 (콜백함수)  
+part07 : 5-1 ~ 5-2 (클로저 개념)  
+part08 : 5-3 (클로저 활용)  
+part09 : 6-1 (프로토타입 개념)  
+part10 : 6-2 (프로토타입 체인)
+
+- 발표 후 README.md 및 N_week/README.md에 목차를 정리합니다.
+
+## 📝 Contents
