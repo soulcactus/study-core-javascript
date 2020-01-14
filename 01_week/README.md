@@ -6,3 +6,5 @@
 - hwizzzang : 2-1 ~ 2-3-1 (실행컨텍스트와 호이스팅)
 
 ## 📝 Contents
+
+- [데이터 타입과 변수](./01_week/part01/README.md)
