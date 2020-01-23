@@ -231,6 +231,12 @@ setTimeout(obj1.func.bind(obj2), 1500);
 
 ### **비동기 작업의 동기적 표현 - Promise**
 
+ES6의 Promise를 이용해서 비동기 제어를 할 수 있습니다.
+
+new 연산자와 함께 호출한 Promise의 인자로 넘겨주는 콜백 함수는 호출할 때 바로 실행되지만 그 내부에 resolve 또는 reject 함수를 호출하는 구문이 있을 경우 둘 중 하나가 실행되기 전까지는 다음(then) 또는 오류구문(catch)으로 넘어가지 않습니다.
+
+따라서, 비동기 작업이 완료될 때 비로소 resolve 또는 reject를 호출하는 방법으로 비동기 작업의 동기적 표현이 가능합니다.
+
 ```javascript
 new Promise(function(resolve) { // (1)
    setTimeout(function() {
@@ -265,3 +271,167 @@ new Promise(function(resolve) { // (1)
 // 에스프레소, 아메리카노
 // 에스프레소, 아메리카노, 카페라떼
 ```
+1. 첫 번째 줄과 같이 선언할 경우 Promise 객체에 파라미터로 넘겨준 익명함수는 즉각 실행됩니다. new Promise()로 인스턴스를 생성하고- 이때 Promise() 파라미터에 작성한 function() {}을 실행합니다. function을 excuter(실행자)라고 합니다. 
+
+* * excuter는 resolve와 reject라는 두 개의 함수를 매개변수로 받는 실행함수입니다.
+excuter는 비동기 작업을 시작하고 모든 작업을 끝낸 후 해당 작업이 성공적으로 이행되었으면 resolve 함수를 호출하고, 중간에 오류가 발생했을 경우 reject 함수를 호출합니다.
+
+2. excuter 안에서 name 변수에 "에스프레소"를 할당하고 console.log(name);를 실행하여 "에스프레소"가 출력됩니다.
+
+3. 바로 밑의 resolve()는 함수를 호출하는 형태이지만 호출하지 않습니다. (아래에 이어서 설명합니다.)
+
+4. 연결된 첫 then()의 핸들러 함수를 실행하지 않고 아래로 이동합니다.
+
+5. 연결된 두 번째 then()의 핸들러 함수를 실행하지 않고 아래로 이동합니다.
+
+6. 더 이상 처리할 코드가 없습니다.
+
+7. 첫 번째의 excuter 블록의 resolve가 호출되어 첫 번째 then()의 핸들러 함수가 실행되며, 콘솔에 "에스프레소, 아메리카노" 가 출력됩니다.
+
+- * then 메서드는 Promise 객체를 리턴하고 두 개의 콜백 함수를 인수로 받습니다.
+
+   * then 메서드는 promise 객체를 리턴하고 인수로 받은 콜백 함수들의 리턴 값을 이어 받습니다. 따라서 chaning이 가능합니다.
+
+8. 또 다시 excuter 블록의 resolve가 호출되어 두 번째 then()의 핸들러 함수가 실행되며, 콘솔에 "에스프레소, 아메리카노, 카페라떼" 가 출력됩니다.
+
+### **비동기 작업의 동기적 표현 - Generator**
+
+ES6의 Generator를 이용해서 비동기 제어를 할 수 있습니다.
+
+7번째 줄의 '*'이 붙은 함수가 바로 Generator 함수입니다.
+
+Generator 함수를 실행하면 Iterator가 반환되는데 Iterator는 next라는 메서드를 가지고 있습니다. 이 next 메서드를 호출하면 Generator 함수 내부에서 가장 먼저 등장하는 yield에서 함수의 실행을 멈춥니다. 이후 다시 next 메서드를 호출하면 앞서 멈췄던 부분부터 시작하여 그다음에 등장하는 yield에서 함수 실행을 멈춥니다. 
+
+* 이터레이터는 "반복자"라는 의미로, 이터러블(Iterabe, 순회 가능한 자료구조)의 요소를 탐색하기 위한 포인터로서 next() 함수를 가지고 있는 객체입니다.
+
+비동기 작업이 완료되는 시점마다 next 메서드를 호출해준다면 Generator 함수 내부의 소스가 위에서 아래로 순차적으로 진행됩니다.
+
+```javascript
+var addCoffee = function(prevName, name) { // (5)
+   setTimeout(function() {
+      coffeeMaker.next(prevName ? prevName + ", " + name : name);
+   }, 500);
+};
+
+var coffeeGenerator = function* () { // (1)
+   var espresso = yield addCoffee("", "에스프레소"); // (4)
+   console.log(espresso); // (6)
+   var americano = yield addCoffee(espresso, "아메리카노"); // (7)
+   console.log(americano); // (8)
+   var latte = yield addCoffee(americano, "카페라떼");
+   console.log(latte);
+};
+
+var coffeeMaker = coffeeGenerator(); // (2)
+coffeeMaker.next(); // (3)
+
+//  -- 결과 -- 
+// {value: undefined, done: false}
+// 에스프레소
+// 에스프레소, 아메리카노
+// 에스프레소, 아메리카노, 카페라떼
+```
+
+1. (1)에서 표현식 형태로 제너레이터 함수를 정의합니다. var coffeeGenerator = function*(){} 형태에서 var coffeeGenerator를 제외하면 function*(){} 는 무명함수입니다. 생성한 함수를 변수에 할당해야 함수를 호출할 수 있으며, coffeeGenerator가 함수 이름이 됩니다. function*의 오른쪽에 함수 이름을 작성할 수 있지만, 외부에서 함수를 호출할 때는 coffeeGenerator()로 호출해야합니다.
+
+2. (2)에서 coffeeGenerator()를 호출하면 제너레이터 오브젝트를 생성합니다. 이때 함수 블록의 코드를 실행하지 않고 생성한 제너레이터 오브젝트를 반환합니다.
+
+3. (3) 제너레이터 오브젝트는 이터레이터 오브젝트입니다. 제너레이터 오브젝트의 next()를 호출하면 이터레이터 오브젝트와 같은 처리를 수행합니다. next()를 호출하면 coffeeGenerator 제너레이터 함수의 함수 블록을 수행합니다.
+
+```javascript
+var espresso = yield addCoffee("", "에스프레소");
+console.log(espresso);
+...
+```
+4. (4) 위의 두 줄은 제너레이터 함수 블록의 코드입니다. 함수 블록의 첫 줄부터 첫 번째 yield까지 수행합니다. yield 키워드는 오른쪽의 표현식을 평가하고, 평가 결과를 {value: undefined, done: false} 형태로 반환합니다.
+
+* [returnValue] = yield [expression]
+   * yield 키워드의 오른쪽 표현식(expression)은 선택으로, 표현식을 작성하면 이를 평가하고 평가 결과를 반환합니다. 표현식을 작성하지 않으면 undefined를 반환하며 yield의 표현식 결과를 왼쪽의 [returnValue]에 할당하지 않습니다. 제너레이터 오브젝트의 next()를 호출하면 next() 파라미터 값이 [returnValue]에 설정됩니다.
+
+   * next()로 제너레이터 함수를 호출하면 yield 작성에 관계 없이 "{value:값, done:true/false}" 형태로 반환합니다.
+
+   * yield를 수행하면 표현식 평가 결과가 value 값에 설정되고, yield를 수행하지 못하면 undefined가 설정됩니다.
+
+   * yield를 수행하면 done 값에 false가 설정되고, yield를 수행하지 못하면 true가 설정됩니다.
+
+   * 제너레이터 함수의 모든 yield 수행을 완료했는데, 다시 next()를 호출하면 수행할 yield가 없으므로 value 값에 undefined가 설정되고 done 값에 true가 설정됩니다.
+
+5. (5) prevName에 빈 값이 들어가고 name에 "에스프레소가" 들어가므로 "에스프레소를" espresso에 설정하게됩니다.
+
+6. (5)에서 coffeeMaker.next("에스프레소")를 호출하게 되어 첫 번째 yield 이후의 코드부터 두 번째 yield까지 실행합니다. 제너레이터 함수에서 반환된 결과를 espresso 변수에 할당하고 "에스프레소"를 출력합니다.
+
+7. (7) prevName에는 "에스프레소"가, name에는 "아메리카노"가 할당되므로 (5)에서 "아메리카노, 에스프레소" 라는 값이 설정됩니다.
+
+8. 이후는 위의 과정과 같습니다. addCoffee 함수의 setTimeout 안에서 next를 만나 이전 yield 이후의 코드부터 다음 yield 코드까지 실행합니다. 
+
+```javascript 
+// 콜백 예제를 이용한 제너레이터 (다른 ver.) *같이 풀어보실래요?*
+
+function helloWorld_Hello() {
+  setTimeout(() => {
+    iterator.next('Hello');
+  }, 1000);
+}
+ 
+function helloWorld_Space(text) {
+  setTimeout(() => {
+    iterator.next(text + ' ');
+  }, 1000);
+}
+ 
+function helloWorld_World(text) {
+  setTimeout(() => {
+    iterator.next(text + 'World');
+  }, 1000);
+}
+ 
+function* helloWorld() {
+    const hello = yield helloWorld_Hello();
+    const space = yield helloWorld_Space(hello);
+    const world = yield helloWorld_World(space);
+    console.log(world); // Hello World
+    return;
+}
+const iterator = helloWorld();
+iterator.next();
+
+// -- 결과 --
+// {value: undefined, done: false}
+// Hello World
+```
+
+### **비동기 작업의 동기적 표현 - Promise + Async/await**
+
+ES2017에서는 Async/await가 추가됐습니다. 
+
+비동기 작업을 수행하고자 하는 암수 앞에 async를 표기하고, 함수 내부에서 실질적인 비동기 작업이 필요한 위치마다 await를 표기하는 것만으로 뒤의 내용을 promise로 자동 전환합니다.
+
+해당 내용이 resolve된 이후에야 다음으로 진행합니다. 즉 Promise의 then과 흡사한 효과를 얻을 수 있습니다.
+
+```javascript
+var addCoffee = function(name) {
+   return new Promise(function(resolve) {
+      setTimeout(function() {
+         resolve(name);
+      }, 500);
+   });
+};
+
+var coffeeMaker = async function() {
+   var coffeeList = "";
+   var _addCoffee = async function(name) { 
+      coffeeList += (coffeeList ? ", " : "") + await addCoffee(name); 
+   };
+
+   await _addCoffee("에스프레소"); 
+   console.log(coffeeList);
+   await _addCoffee("아메리카노"); 
+   console.log(coffeeList);
+   await _addCoffee("카페라떼"); 
+   console.log(coffeeList);
+};
+
+coffeeMaker();
+```
+
+
