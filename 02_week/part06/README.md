@@ -242,7 +242,7 @@ setTimeout(obj1.func.bind(obj2), 1500);
 
 * setTimeout : 사용자의 요청에 의해 특정 시간이 경과되기 전까지 어떤 함수의 실행을 보류
 
-* addEventListener : 사용자의 직접적인 개입이 있을 때 어떤 함수를 실행하도록 대기
+* addEventListener : 사용자의 직접적인 개입이 있을 때 어떤 함수를 실행하도록 대기   
 
 * XMLHttpRequest : 웹브라우저 자체가 아닌 별도의 대상에 무언가를 요청하고 그에 대한 응답이 왔을 때 비로소 어떤 함수를 실행하도록 함
 
@@ -346,7 +346,7 @@ coffeeMaker.next(); // (3)
 // {value: undefined, done: false}
 // 에스프레소
 // 에스프레소, 아메리카노
-// 에스프레소, 아메리카노, 카페라떼
+// 에스프레소, 아메리카노, 카페라떼 
 ```
 
 1. (1)에서 표현식 형태로 제너레이터 함수를 정의합니다. var coffeeGenerator = function*(){} 형태에서 var coffeeGenerator를 제외하면 function*(){} 는 무명함수입니다. 생성한 함수를 변수에 할당해야 함수를 호출할 수 있으며, coffeeGenerator가 함수 이름이 됩니다. function*의 오른쪽에 함수 이름을 작성할 수 있지만, 외부에서 함수를 호출할 때는 coffeeGenerator()로 호출해야합니다.
