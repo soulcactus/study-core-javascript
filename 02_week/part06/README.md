@@ -379,7 +379,7 @@ console.log(espresso);
 
 7. (7) prevName에는 "에스프레소"가, name에는 "아메리카노"가 할당되므로 (5)에서 "아메리카노, 에스프레소" 라는 값이 설정됩니다.
 
-8. 이후는 위의 과정과 같습니다. addCoffee 함수의 setTimeout 안에서 next를 만나 이전 yield 이후의 코드부터 다음 yield 코드까지 실행합니다. 
+8. 이후는 위의 과정과 같습니다. addCoffee 함수의 setTimeout 안에서 next를 만나 이전 yield 이후의 코드부터 다음 yield 코드까지 실행합니다.  
 
 ```javascript 
 // 콜백 예제를 이용한 제너레이터 (다른 ver.) *같이 풀어보실래요?*
