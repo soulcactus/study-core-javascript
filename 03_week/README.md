@@ -2,7 +2,7 @@
 
 ## 🧐 Part
 
--   soulcactus : 2-1 ~ 2-3-1 (실행컨텍스트와 호이스팅)
+-   soulcactus : 2-1 ~ 2-3-1 (실행 컨텍스트와 호이스팅)
 -   hwizzzang : 5-1 ~ 5-2 (클로저 개념)
 
 ## 📝 Contents
