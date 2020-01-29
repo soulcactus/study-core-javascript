@@ -170,3 +170,248 @@
     하지만 const와 let 키워드는 블록 실행 컨텍스트를 따르므로 위의 예제 코드는 아무런 에러가 발생하지 않습니다.
 
 3. 실행 컨텍스트 생성 과정
+
+    ```javascript
+    // ---------------------------------- (1)
+    var a = 1;
+
+    function outer() {
+        function inner() {
+            console.log(a); // undefined
+
+            var a = 3;
+        }
+
+        inner(); // --------------------- (2)
+        console.log(a); // 1
+    }
+
+    outer(); // ------------------------- (3)
+    console.log(a);
+    ```
+
+    실행 컨텍스트는 환경은 선언이 아니라 *실행*될 때 구성된다고 앞서 말씀드렸습니다.
+    위의 예제 코드와 같이 자바스크립트 코드를 실행하는 순간(1) 전역 컨텍스트 환경이 콜 스택에 담깁니다.
+    전역 컨텍스트 환경이라는 개념은 일반적인 실행 컨텍스트 환경과 특별히 다를 것이 없습니다.
+    굳이 차이점을 찾자면 전역 컨텍스트 환경이 관여하는 대상은 함수가 아닌 전역 공간이기 때문에 arguments가 없습니다.
+    전역 공간을 둘러싼 외부 스코프란 존재할 수 없기 때문에 스코프체인 상에는 전역 스코프 하나만 존재합니다.
+    이런 성질들은 구조상 당연히 그럴 수밖에 없는 것입니다.
+
+    | 콜스택        |
+    | ------------- |
+    |               |
+    |               |
+    |               |
+    | 전역 컨텍스트 |
+
+    (2)에서 inner 함수의 실행 컨텍스트 환경이 콜스택 가장 위에 담기면 outer 컨텍스트 환경과 관련된 코드의 실행을 중단하고 inner 함수 내부의 코드를 순서대로 진행합니다.
+    다음과 같이 진행됩니다.
+
+    | 콜스택        |
+    | ------------- |
+    |               |
+    |               |
+    | outer         |
+    | 전역 컨텍스트 |
+
+    | 콜스택        |
+    | ------------- |
+    |               |
+    | inner         |
+    | outer         |
+    | 전역 컨텍스트 |
+
+    | 콜스택        |
+    | ------------- |
+    |               |
+    |               |
+    | outer         |
+    | 전역 컨텍스트 |
+
+    | 콜스택        |
+    | ------------- |
+    |               |
+    |               |
+    |               |
+    | 전역 컨텍스트 |
+
+    | 콜스택 |
+    | ------ |
+    |        |
+    |        |
+    |        |
+    |        |
+
+4. 실행 컨텍스트 과정
+
+    3번에서는 실행 컨텍스트 환경이 *생성*되어 콜 스택에서 처리되는 과정에 대해 살펴봤습니다.
+    4번에서는 실행 컨텍스트 내부에서 일어나는 일과, 코드가 어떻게 실행되는지, 즉 실행 컨텍스트 과정에 대해 살펴보겠습니다.
+    쉽게 설명하면, 3번에서는 실행 컨텍스트 환경이라는 컨테이너가 어떻게 콜 스택에 적재되고 제거되는지 살펴봤다면, 4번에서는 각각의 컨테이너 안에서 일어나는 과정에 대한 설명입니다.
+    실행 컨텍스트 환경이 활성화될 때 자바스크립트 엔진은 해당 컨텍스트 환경 내부의 코드들을(책에서는 관련된이라고 서술하고 있으나 모호한 표현이라 이렇게 설명합니다.) 실행하는데 필요한 *환경 정보*들을 수집해서 **실행 컨텍스트 객체**에 저장합니다.
+    이 객체는 자바스크립트 엔진이 활용할 목적으로 생성될 뿐 개발자가 코드를 통해 확인할 수는 없습니다.
+    여기에 담기는 정보들은 다음과 같습니다.
+
+    - VariableEnvironment(변수 환경 객체)
+    - LexicalEnvironment(어휘 환경 객체)
+    - ThisBinding(this 바인딩 객체)
+
+    쉽게 설명하면 실행 컨텍스트 환경이라는 컨테이너 내부에 VariableEnvironment라는 컨테이너와, LexicalEnvironment라는 컨테이너, ThisBinding이라는 컨테이너가 있다고 생각하면 됩니다.
+    먼저 LexicalEnvironment 객체를 살펴 보겠습니다.
+
+    ```javascript
+    LexicalEnvironment = {
+        EnviromentRecord: {},
+        OutterEnviromentReference: {},
+    };
+    ```
+
+    LexicalEnvironment 객체의 내부는 위와 같습니다.
+    현재 실행 컨텍스트 환경 내부의 함수 혹은 변수가 저장되는 Environment Record라는 공간과, 외부 컨텍스트 환경을 *참조*하는 Outter Enviroment Reference 공간입니다.
+    외부 컨텍스트 환경을 *참조*하기 때문에 record가 아니라 reference라는 이름이 붙었습니다.
+    environment record 객체 내부는 다음과 같이 Object 안에 실제 값들이 저장되는 Environment Record라는 공간과,
+    with문과 같이 식별자를 어떤 특정 객체 A의 속성으로 취급할 때 A를 바인딩 해주는 Object Environment Record라는 공간으로 구성돼 있습니다.
+
+    ```javascript
+    LexicalEnvironment = {
+        EnviromentRecord: {
+            DeclartionEnvironmentRecord = {
+                a: 33,
+                b: 'Hello World',
+            },
+            ObjectEnvironmentRecord = {
+                bindObject: [object],
+            }
+        },
+        OutterEnviromentReference: {}
+    }
+    ```
+
+    잠시 with문을 살펴보도록 하겠습니다.
+
+    ```javascript
+    const obj = {
+        name: 'soulcactus',
+    };
+
+    with (obj) {
+        name = 'hwizzzang';
+    }
+
+    console.log(obj['name']); // hwizzzang
+    ```
+
+    해당 with문을 실행시 ObjectEnvironmentRecord에 바인딩되는 객체는 obj입니다.
+    DeclartionEnvironmentRecord에 담기는 정보는 아래 예제 코드를 통해 살펴보겠습니다.
+
+    ```javascript
+    function sum(x, y) {
+        var result = x + y;
+        var etc = function() {
+            console.log('good');
+        };
+
+        function msg() {
+            return result;
+        }
+    }
+
+    sum(10, 20);
+    ```
+
+    위와 같은 코드가 있다고 가정합니다. 자바스크립트 엔진이 sum(10, 20)을 만나면 함수 sum에 대한 실행 컨텍스트 환경을 생성합니다.
+    그리고 우선적으로 this를 찾아서 thisBinding 객체에 바인딩합니다.
+    벌써 컨테이너 세 개의 컨테이너 중 하나인 thisBinding의 정체가 해결됐습니다. ✌
+    sum은 일반 함수이므로 이 경우 thisBinding에 바인딩된 객체는 window 객체입니다.
+    함수가 실행되면 다음과 같이 EnviromentRecord 객체에 함수의 매개변수인 x와 y값이 저장됩니다.
+
+    ```javascript
+    LexicalEnvironment = {
+        EnviromentRecord: {
+            DeclartionEnvironmentRecord = {
+                x: 10,
+                y: 20
+            },
+            /* ... */
+        },
+        OutterEnviromentReference: global
+    }
+    ```
+
+    그 다음으로는 함수 내부에 선업된 것들을 가져오고, 함수 내부에서 사용할 수 있는 arguments를 세팅합니다.
+    그러고 나서 선언된 변수들을 가져오는데, 할당 값을 바로 저장하지는 않고 undefined를 저장합니다.
+
+    ```javascript
+    LexicalEnvironment = {
+        EnviromentRecord: {
+            DeclartionEnvironmentRecord = {
+                x: 10,
+                y: 20,
+                arguments: Arguments Object,
+                result: undefined,
+                etc: undefined,
+            },
+            /* ... */
+        },
+        OutterEnviromentReference: global
+    }
+    ```
+
+    우리는 이미 호이스팅이 변수 *할당*이 아닌 *선언*만을 위로 끌어올린다는 사실을 알고 있습니다.
+    그 사실을 기억하고 위의 DeclartionEnvironmentRecord에 담긴 변수 정보를 다시 살펴보시기 바랍니다.
+    result라는 이름을 가진 정보는 저장됐지만, 그것이 가리키는 값은 아직 저장되지 않았습니다.
+    사실, 이것이 바로 호이스팅의 실체입니다. 뒷 부분에서 더 자세히 알아보겠지만, ~~정말 이게 전부입니다.~~ 😉
+    자, 이제 함수가 실행되면 LexicalEnvironment의 내부에 어떤 일이 일어나는 지 살펴보도록 하겠습니다.
+
+    var result = x + y를 만나면 계산 후에 result에 저장하고, var etc = function() { console.log('good') }을 만나면 해당 익명 함수의 참조를 etc에 저장합니다.
+
+    ```javascript
+    LexicalEnvironment = {
+        EnviromentRecord: {
+            DeclartionEnvironmentRecord = {
+                x: 10,
+                y: 20,
+                arguments: Arguments Object,
+                result: 30,
+                etc: Function Reference,
+            },
+            /* ... */
+        },
+        OutterEnviromentReference: global
+    }
+    ```
+
+    함수 sum의 상위 컨텍스트 환경은 전역 환경이므로 OutterEnviromentReference는 global이 되고 상위 컨텍스트 환경에 있는 값을 사용하고자 할 때는 OutterEnviromentReference를 참조합니다.
+    사실, 이것이 바로 스코프체인의 실체입니다. 다음 파트에서 더 자세히 알아보겠지만, ~~정말 이게 전부입니다.~~ 😉
+
+    그렇다면 VariableEnvironment 객체는 무엇일까요?
+    기본적으로는 지금까지 살펴본 LexicalEnvironment 객체와 동일합니다. 사실 지금까지 살펴본 LexicalEnvrionment 객체의 생성 과정은 VariableEnvironment 객체의 생성 과정이었습니다.
+    ~~갑자기 무슨 말이냐고요?~~ 순서 상 LexicalEnvrionment 객체보다 VariableEnvrionment 객체가 먼저 생성되기 때문입니다. 그렇다면 두 객체는 같을까요?
+    _거의_ 같다고 할 수 있습니다만, VariableEnvironment 객체는 앞에 with문과 함께 언급한 ObjectEnvironmentRecord 객체를 가지지 않습니다.
+    동적으로 변경되는 사항을 반영하지 않습니다. 다음 예제 코드를 통해 살펴보겠습니다.
+
+    ```javascript
+    var a = 10;
+
+    function foo() {
+        console.log(a);
+    }
+
+    with ({ a: 20 }) {
+        var bar = function() {
+            console.log(a);
+        };
+
+        foo(); // 10, from VariableEnvrionment
+        bar(); // 20,  from LexicalEnvrionment
+    }
+
+    foo(); // 10
+    bar(); // still 20
+    ```
+
+    with문을 이용한 새로운 a값인 20은 VariableEnvrionment 객체에는 저장되지 않는 값입니다.
+    이처럼 LexicalEnvrionment 객체와 달리, VariableEnvrionment 객체는 변경 사항이 반영되지 않습니다.
+    ~~with문은 eval과 마찬가지로 대표적인 암흑의 구문이므로~~ 사실 with문 등을 사용하지 않는 이상 두 객체는 동일하다고 생각하시면 됩니다.
+    정리하면, VariableEnvrionment 객체에 담기는 내용은 LexicalEnvrionment 객체와 같지만 최초 실행시의 스냅샷을 유지한다는 점이 다릅니다.
+    실행 컨텍스트 객체를 생성할 때, VariableEnvrionment 객체에 정보를 먼저 담은 다음, 이를 그대로 복사해서 LexicalEnvrionment 객체를 만들고, 이후에는 LexicalEnvrionment 객체를 주로 활용합니다.
+    이로써 세 가지 컨테이너의 정체가 모두 해결됐습니다.
