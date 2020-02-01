@@ -33,10 +33,11 @@
 1. [데이터 타입과 변수](01_week/part01/README.md) (soulcactus)
 2. [불변객체와 undefined, null](02_week/part02/README.md) (soulcactus)
 3. [실행 컨텍스트와 호이스팅](01_week/part03/README.md) (hwizzzang)
+   [실행 컨텍스트와 호이스팅](03_week/part03/README.md) (soulcactus)
 4.
 5.
 6. [콜백함수](02_week/part06/README.md) (hwizzzang)
-7.
+7. [클로저 개념](03_week/part07/README.md) (hwizzzang)
 8.
 9.
 10.
