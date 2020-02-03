@@ -34,10 +34,10 @@
 2. [불변객체와 undefined, null](02_week/part02/README.md) (soulcactus)
 3. [실행 컨텍스트와 호이스팅](01_week/part03/README.md) (hwizzzang)
    [실행 컨텍스트와 호이스팅](03_week/part03/README.md) (soulcactus)
-4.
+4. [스코프와 스코프 체인](04_week/part04/README.md) (soulcactus)
 5.
 6. [콜백함수](02_week/part06/README.md) (hwizzzang)
 7. [클로저 개념](03_week/part07/README.md) (hwizzzang)
-8.
+8. [클로저 활용](04_week/part08/README.md) (hwizzzang)
 9.
 10.
