@@ -286,7 +286,6 @@ console.log(addPartial(6, 7, 8, 9,10)); // 55
 그러나 this의 값을 변경할 수밖에 없기 때문에 메서드에서는 사용할 수 없을 것 같네요. this에 관여하지 않는 별도의 부분 적용 함수가 있다면 범용성 측면에서 더욱 좋겠습니다.
 
 ```javascript
-// 흠,.,,,,,,,,,,
 var partial = function() {
   var originalPartialArgs = arguments;
   var func = originalPartialArgs[0];
@@ -294,12 +293,8 @@ var partial = function() {
     throw new Error("첫 번째 인자가 함수가 아닙니다.");
   }
   return function() {
-    // 함수.call(지정할 객체명, 전달할 매개변수)
-    var partialArgs = Array.prototype.slice.call(originalPartialArgs, 1);
-    var restArgs = Array.prototype.slice.all(arguments);
-    // fun.apply([thisObj[,argArray]])
-    // 가져다쓸메소드.apply([현재객체로사용될객체[,함수에 전달될 인수 집합]])
-    //함수.apply(지정할 객체명, [전달할 매개변수])
+    var partialArgs = Array.prototype.slice.call(originalPartialArgs, 1); // [1, 2, 3, 4, 5]
+    var restArgs = Array.prototype.slice.call(arguments); // [6, 7, 8, 9, 10]
     return func.apply(this, partialArgs.concat(restArgs));
   };
 };
@@ -315,17 +310,168 @@ var add = function() {
 var addPartial = partial(add, 1, 2, 3, 4, 5);
 console.log(addPartial(6, 7, 8, 9, 10)); // 55
 
-var dog = {
-  name : "강아지",
-  greet : partial(function(prefix, suffix) {
-    return prefix + this.name + suffix;
-  }, "왈왈, ")
+var hwizzzang = {
+    name : "휘쨩- ",
+    greet : partial(function(prefix, suffix) {
+        console.log("prefix : " + prefix); // prefix : 헥헥이  
+        console.log("suffix : " + suffix); // suffix : 드디어 이해하다!
+        return prefix + this.name + suffix;
+    }, "헥헥이 ")
 };
 
-dog.greet("입니다");
+hwizzzang.greet("드디어 이해하다!");
+```
+* apply - fn.apply(thisArg, [argsArray]) : this 인자를 첫 번째 인자로 받고, 두 번째 인자로는 배열을 받음.
+
+* call - fn.call(thisArg[, arg1[, arg2[, ...]]]) : this 인자를 첫 번째 인자로 받고, 두 번쨰 인자부터는 배열이 아닌 각 인자로 받음
+
+* bind - fn.bind(thisArg[, arg1[, arg2[, ...]]]) : call와 인자 작성법은 같으니, apply/call 과 달리 바로 메소드가 실행되지 않음. thisArg를 바인딩하는 역할만 함.
+
+* 추구하는 목적은 같으나 용도는 서로 다르다. call, apply는 함수를 실행하여 그 함수의 값을, bind는 지정한 객체의 새로운 함수를 만든다. 쉽게 말해, call/apply는 그냥 함수가 실행되도록 도와주는 것이고, bind는 새로운 함수를 만들어준다.
+
+* Array.prototype.slice.call(arguments) : arguments는 전달인자들을 배열처엄 인덱스로 접근할 수 있지만, 실제 배열이 아니기 때문에 push, forEach, indexOf 등과 같은 메서드는 존재하지 않으며 사용할 수 없다. 이러한 형태를 띄는 것이 이러한 형태를 띄는 것이 Array-like objects 이다. 이는 배열 형태로 바꾸어 사용할 수 있는데 Array.prototype.slice.call(arguments); 등과 같이 slice와 call을 활용할 수 있다.
+
+  ```javascript
+  function list() {
+    return arguments;
+  }
+  
+  list(1, 2, 3); // [1, 2, 3, callee: function, Symbol(Symbol.iterator):function]
+
+  // ----------------------------------------------
+
+  function list() {
+    return Array.prototype.slice.call(arguments);
+  }
+
+  list(1, 2, 3); // [1, 2, 3]
+  ```
+
+  ```javascript
+  function func(arg1) {
+    var rest = Array.prototype.slice.call(arguments, 1);
+
+    console.log(rest);
+  }
+
+  func(1, 2, 3, 4); // [2, 3, 4]
+  ```
+
+첫 번째 인자에는 원본 함수를, 두 번째 인자 이후부터는 미리 적용할 인자들을 전달하고, 반환할 함수(부분 적용 함수)에서는 다시 나머지 인자들을 받아 이들을 한데 모아(concat) 원본 함수를 호출(apply)합니다. 또한 실행 시점의 this를 그대로 반영함으로써 this에는 아무런 영향을 주지 않게 됐습니다.
+
+위 예제 코드는 부분 적용 함수에 넘길 인자를 반드시 앞에서부터 차례로 전달할 수밖에 없다는 점이 조금 아쉬운데요. 인자들을 원하는 위치에 미리 넣어놓고 나중에 빈 자리에 인자를 채워넣어 실행할 수 있게끔 코드를 수정해보겠습니다.
+
+```javascript
+  // Object.defineProperty() 정적 메서드는 객체에 직접 새로운 속성을 정의하거나 이미 존재하는 속성을 수정한 후, 그 객체를 반환합니다.
+  Object.defineProperty(window, "_", {
+    value : "EMPTY_SPACE",
+    writeable : false, // 쓰기 불가능
+    configurable : false, // 구성 불가능
+    enumerable : false // 열거, 셈 불가능
+  });
+
+  var partial = function() {
+    var originalPartialArgs = arguments;
+    var func = originalPartialArgs[0];
+    
+    if(typeof func !== "function") {
+        throw new Error("첫 번째 인자가 함수가 아님");
+    }
+
+    return function() {
+        var partialArgs = Array.prototype.slice.call(originalPartialArgs, 1);
+        var restArgs = Array.prototype.slice.call(arguments);
+
+        for (var i = 0; i < partialArgs.length; i++) {
+          if(partialArgs[i] === _) {
+            partialArgs[i] = restArgs.shift();
+          } 
+        }
+
+        return func.apply(this, partialArgs.concat(restArgs));
+    };
+};
+
+var add = function() {
+    var result = 0;
+    for (var i = 0; i< arguments.length; i++) {
+        result += arguments[i];
+    }
+    return result;
+};
+
+var addPartial = partial(add, 1, 2, _, 4, 5, _, _, 8, 9); // (1)
+console.log(addPartial(3, 6, 7, 10));
+
+var hwizzzang = {
+    name : "휘쨩- ",
+    greet : partial(function(prefix, suffix) {
+        console.log("prefix : " + prefix); // prefix : 헥헥이  
+        console.log("suffix : " + suffix); // suffix : 드디어 이해하다!
+        return prefix + this.name + suffix;
+    }, "헥헥이 ")
+};
+
+hwizzzang.greet("드디어 이해하다!");
 ```
 
+이번에는 '비워놓음'을 표시하기 위해 미리 전역객체에 _라는 프로퍼티를 준비하면서 삭제 변경 등의 접근에 대한 방어 차원에서 여러 가지 프로퍼티 속성을 설정했습니다.
 
+(1) 처음에 넘겨준 인자들 중 _로 비워놓은 공간마다 나중에 넘어온 인자들이 차례대로 끼워넣어지도록 구현됐습니다. 부분 적용 함수를 만들 때 미리 실행할 삼수의 모든 인자 개수를 맞춰 빈 공간을 확보하지 않아도 되며 최조 ㅇ실행 시 인자 개수가 많은 적든 잘 실행될 것입니다.
 
+이전 예제와 위에서 본 예지의 부분 적용 함수들은 모두 클로저를 핵심 기법으로 사용하였습니다. 미리 일부 인자를 넘겨두어 기억하게끔 하고 추후 필요한 시점에 기억했던 인자들까지 함께 실행하게 한다는 개념 자체가 클롲저의 정의에 정확히 부합합니다.
 
+다음 예제에서는 디바운스를 소개하겠습니다.
 
+* 디바운스 : 짧은 시간 동안 동일한 이벤트가 많이 발생할 경우 이를 전부 처리하지 않고 처음 또는 마지막에 발생한 이벤트에 대해 한 번만 처리하는 것으로, 프론트엔드 성능 최적화에 큰 도움을 주는 기능 중 하나입니다. scroll, wheel, mousemove, resize 등에 적용하기 좋습니다.
+
+```javascript
+var debounce = function(eventName, func, wait) { // (1)
+    var timeoutId = null; // (2)
+    return function(event) { // (3)
+        var self = this; // (4)
+        console.log(eventName, "event 발생"); 
+        clearTimeout(timeoutId); // (5) (7)
+        timeoutId = setTimeout(func.bind(self, event), wait); // (6) (8)
+    };
+};
+
+var moveHandler = function(e) {
+    console.log("move event 처리");
+}
+
+var wheelHandler = function(e) {
+    console.log("wheel event 처리");
+}
+
+document.body.addEventListener("mousemove", debounce("move", moveHandler, 1000));
+document.body.addEventListener("mousewheel", debounce("wheel", wheelHandler, 1000));
+```
+
+(1) var debounce = function(eventName, func, wait)
+* 디바운스 함수는 출력 용도로 지정한 eventName, 실행할 함수 func, 마지막으로 발생한 이벤트인지 여부를 판단하기 위한 대기시간 wait(ms)를 받습니다.
+
+(2) var timeoutId = null;
+* 내부에서는 timeoutId 변수를 생성하고
+
+(3) return function(event) { ... }
+* 클로저로 EventListener에 의해 호출될 함수를 반환합니다.
+
+(4) var self = this;
+* 반환될 함수 내부에서는, setTimeout을 사용하기 위해 this를 별도의 변수에 담고
+
+(5) clearTimeout(timeoutId);
+* 해당 줄에서 무조건 대기큐를 초기화하게 했습니다. 
+
+(6) timeoutId = setTimeout(func.bind(self, event), wait);
+* 마지막으로 7번째 줄에서 setTimeout으로 wait 시간만큼 지연시킨 후, 원래의 func를 호출하는 형태입니다. 
+
+(7) clearTimeout(timeoutId);
+*  이제 최초 event가 발생하면 이번에는 6번째 줄에 의해 앞서 저장했던 대기열을 초기화하고
+
+(8) timeoutId = setTimeout(func.bind(self, event), wait); 
+* 다시 7번째 줄에서 새로운 대기열을 등록합니다.
+
+결국 각 이벤트가 바로 이전 이벤트로부터 wait 시간 이내에 발생하는 한, 마지막에 발생한 이벤트만이 초기화되지 않고 무사히 실행될 것입니다.
+
+위 예제의 디바운스 함수에서 클로저로 처리되는 변수에는 eventName, func, wait, timeout 이 있습니다.
