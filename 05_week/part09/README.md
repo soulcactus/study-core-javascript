@@ -2,14 +2,14 @@
 
 ## 🤘 목표
 
--   [ ]
+-   [ ] 프로토타입을 이해한다.
 
 ####
 
 ## 🐣 프로토타입
 
 자바스크립트는 프로토타입 기반 언어입니다.
-클래스 기반 언어에서는 *상속(확장)*을 사용하지만, 프로토타입 기반 언어에서는 어떤 객체를 **원형**으로 삼고 이를 복제(참조)함으로써 상속(확장)과 비슷한 효과를 얻습니다.
+클래스 기반 언어에서는 **상속(확장)**을 사용하지만, 프로토타입 기반 언어에서는 어떤 객체를 **원형**으로 삼고 이를 *복제(참조)*함으로써 *상속(확장)*과 비슷한 효과를 얻습니다.
 유명한 프로그래밍 언어의 상당수가 클래스 기반인 것에 비교하면 프로토타입은 꽤나 독특한 개념이라 할 수 있습니다.
 
 ####
@@ -22,8 +22,8 @@ const instance = new Constructor();
 
 1. 어떤 생성자 함수(Constructor)를 new 연산자와 함께 호출합니다. ← 위 예제의 경우 new Constructor();
 2. Constructor에서 정의된 내용을 바탕으로 새로운 instance가 생성됩니다. ← 위 예제의 경우 식별자 instance
-3. 이때 instance에는 **proto**라는 프로퍼티가 자동으로 부여됩니다.
-4. 이 프로퍼티는 Constructor의 prototype 프로터피를 참조합니다.
+3. 이때 instance에는 **\_\_proto\_\_**라는 프로퍼티가 자동으로 부여됩니다.
+4. 이 프로퍼티는 Constructor의 prototype 프로퍼티를 참조합니다.
 
 ~~그다지 직관적이라는 생각이 들지 않아~~ 책의 도식은 따로 이미지를 첨부하지 않았습니다. 🤔
 
@@ -35,14 +35,15 @@ prototype 객체 내부에는 인스턴스가 사용할 메서드를 저장합�
 dunder는 double underscore의 줄임말이라고 합니다.
 
 ES5.1 명세에는 \_\_proto\_\_가 아니라 [[prototype]]이라는 명칭으로 정의돼 있습니다.
-\_\_proto\_\_라는 프로퍼티는 사실 브라우저들이 [[prototype]]을 구현한 대상에 지나지 않았습니다.
-명세에는 instance.\_\_proto\_\_와 같은 방식으로 직접 접근하는 것은 허용되지 않고 오직 Object.getPrototypeOf(instance) 또는 Refelect.getPrototypeOf(instance)를 통해서만 접근할 수 있도록 정의했습니다.
+\_\_proto\_\_라는 프로퍼티는 사실 브라우저가 [[prototype]]을 구현한 대상에 지나지 않았습니다.
+명세에는 instance.\_\_proto\_\_와 같은 방식으로 직접 접근하는 것은 허용되지 않고 오직 Object.getPrototypeOf(instance) 또는 Reflect.getPrototypeOf(instance)를 통해서만 접근할 수 있도록 정의했습니다.
 그러나 이런 명세에도 불구하고 대부분의 브라우저가 \_\_proto\_\_에 직접 접근하는 방식을 포기하지 않았고,
 결국 ES6에서는 이를 브라우저에서 동작하는 레거시 코드에 대한 호환성 유지 차원에서 정식으로 인정하기 시작했습니다.
+
 다만 어디까지나 브라우저에서의 호환성을 고려한 지원일 뿐, 권장되는 방식은 아니며 브라우저가 아닌 다른 환경에서는 얼마든지 이 방식이 지원되지 않을 수 있습니다.
 그러므로 이 글에서는 이해의 편의를 위해 \_\_proto\_\_를 사용합니다만, 학습 목적으로만 이해하고 실무에서는 가급적 \_\_proto\_\_를 사용하지 않기를 권장합니다.
-[Object.getPrototypeOf()](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf), [Object.create()](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Object/create) 등을 이용하도록 합니다.
-기본적으로 \_\_proto\_\_는 생략 가능합니다.
+[Object.getPrototypeOf()](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf), [Object.create()](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Object/create), [Reflect.getPrototypeOf()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/getPrototypeOf) 등을 이용하도록 합니다.
+_기본적으로 \_\_proto\_\_는 생략 가능합니다._
 
 ####
 
@@ -141,7 +142,7 @@ Person.prototype.getName = function() {
 };
 ```
 
-예제코르르 자세히 살펴보기 전에 앞서 주석을 살펴보겠습니다.
+예제코드를 자세히 살펴보기 전에 앞서 주석을 살펴보겠습니다.
 주석에 *화살표 함수로 작성할 수 없다*고 적어뒀습니다.
 화살표 함수는 생성자 함수로 사용할 수 없습니다.
 생성자 함수는 prototype 프로퍼티를 가지며, prototype 프로퍼티가 가리키는 prototype 객체의 constructor를 사용합니다.
@@ -237,6 +238,13 @@ new 연산자를 이용한 방식과 그렇지 않은 방식에 대해서는 이
 
 -   [왜 new Array()보다 []의 선호도가 높을까?](https://withhsunny.tistory.com/71)
 -   [문자열 원형과 String 객체의 차이](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+무리한 표현이지만, 프로토타입 개념을 인간의 언어의 빗대어 말하면
+어떤 제작자(constructor)가 어떤 모양(prototype 내부의 메서드 등의 기능)을 닮은 붕어빵틀(prototype)을 제공하면 그 틀을 빌려(참조) 붕어빵(instance)을 찍어내는 것과 같습니다.
+붕어빵틀(prototype)과 꼭 닮은 붕어빵(instance)은 그 틀(prototype)과 제작자(constructor)를 기억합니다.
+이미 구워진 빵처럼(?) 특별한 성질(타입)의 붕어빵(number, string, boolean)이 아니라
+떡반죽같은 성질(타입)의 붕어빵(number, string, boolean 외 타입)이라면(?) 제작자(constructor)는 변경 가능한데요,
+그렇다고 해서 붕어빵이라는 붕어빵 본연의 성질(타입)인 밀가루라는 사실까지 바뀌는 것은 아닙니다.
 
 ####
 
