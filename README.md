@@ -37,8 +37,8 @@
 4. [스코프와 스코프 체인](04_week/part04/README.md) (soulcactus)
 5. [this](06_week/part05/README.md) (hwizzzang)
 6. [콜백함수](02_week/part06/README.md) (hwizzzang)
-7. [클로저 개념](03_week/part07/README.md) (hwizzzang)
+7. 클로저 개념 ([hwizzzang](03_week/part07/README.md) / [soulcactus](07_week/part07/README.md))
 8. [클로저 활용](04_week/part08/README.md) (hwizzzang)
-9. [프로토타입 개념](05_week/part09/README.md) (soulcactus)
+9. 프로토타입 개념 ([soulcactus](05_week/part09/README.md) / [hwizzzang](07_week/part09/README.md))
 10. [프로토타입 체인](06_week/part10/README.md) (soulcactus)
-11.
+11. 
