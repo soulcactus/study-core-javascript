@@ -105,7 +105,7 @@ inner 함수는 outer 함수 내부에서 선언됐으므로, outer 함수의 le
 이제 스코프 체이닝에 따라 outer에서 선언한 변수 a에 접근해서 1만큼 증가시킨 후 그 값인 2를 반환하고, inner 함수의 실행 컨텍스트가 종료됩니다.
 다시 outer2를 호출하면 같은 방식으로 a의 값을 2에서 3으로 1 증가시킨 후 3을 반환합니다.
 
-inner 함수의 실행 시점에는 outer 함수는 이미 실행이 종료된 상태인데 어떻게 outer 함숭릐 lexicalEnvironment에 접근할 수 있는 걸까요?
+inner 함수의 실행 시점에는 outer 함수는 이미 실행이 종료된 상태인데 어떻게 outer 함수의 lexicalEnvironment에 접근할 수 있는 걸까요?
 이는 가비지 컬렉터의 동작 방식이기 때문입니다.
 가비지 컬렉터는 어떤 값을 참조하는 변수가 하나라도 있다면 그 값은 수집 대상에 포함하지 않습니다.
 
@@ -126,6 +126,112 @@ inner 함수의 실행 시점에는 outer 함수는 이미 실행이 종료된 �
 예제 코드를 통해 살펴보겠습니다.
 
 ```javascript
+(() => {
+    let interValid = null;
+    let a = 0;
+
+    const inner = () => {
+        if (++a >= 10) {
+            clearInterval(interValid);
+        }
+
+        console.log(a);
+    };
+
+    interValid = setInterval(inner, 1000);
+})();
+```
+
+위의 코드는 별도의 외부객체인 window의 메서드(setInterval 또는 setTimeout)에 전달할 콜백함수 내부에서 지역변수를 참조합니다.
+
+```javascript
+(() => {
+    let count = 0;
+    const button = document.createElement('button');
+
+    button.innerText = 'click';
+
+    button.addEventListener('click', function() {
+        console.log(++count, 'times clicked');
+    });
+
+    document.body.appendChild(button);
+})();
+```
+
+위의 코드는 별도의 외부객체인 DOM의 메서드(addEventListener)에 등록할 handler 함수 내부에서 지역변수를 참조합니다.
+두 상황 모두 지역변수를 참조하는 내부함수를 외부에 전달했기 때문에 클로저에 해당합니다.
+
+####
+
+## 🖥 클로저와 메모리 관리
+
+메모리 누수의 위험을 이유로 클로저 사용을 조심해야 한다거나 심지어 지양해야 한다고 주장하는 목소리도 있지만 메모리 소모는 클로저의 본질적인 특성일 뿐입니다.
+*매모리 누수*라는 표현은 개발자의 의도와는 달리 어떤 값의 참조 카운트가 0이 되지 않아, GC의 수거 대상이 되지 않는 경우에는 맞는 표현이지만,
+개발자가 의도적으로 참조 카운트를 0이 되지 않게 설계한 경우는 *누수*라고 할 수 없습니다.
+과거에는 의도치 않게 누수가 발생하는 여러가지 상황들이 있었지만(순환 참조, IE의 이벤트 핸들러 등)
+그중 대부분은 최근의 자바스크립트 엔진에서는 발생하지 않거나 거의 발견하기 힘들어졌으므로 이제는 의도대로 설계한 **메모리 소모**에 대한 관리법만 잘 파악하는 것만으로 충분합니다.
+
+클로저는 어떤 필요에 의해 의도적으로 함수의 지역변수 메모리를 소모하도록함으로써 발생합니다.
+그렇다면 그 필요성이 사라진 시점에는 더는 메모리를 소모하지 않게 하면 됩니다.
+참조 카운트를 0으로 만들면 언젠가 GC가 수거해 갈 것이고, 이때 소모됐던 메모리도 회수됩니다.
+참조 카운트를 0으로 만들기 위해서는 식별자에 참조형이 아닌 기본형 데이터(null 혹은 undefined)를 할당하면 됩니다.
+예제 코드를 통해 살펴보도록 하겠습니다.
+
+```javascript
+const outer = (() => {
+    let a = 1;
+
+    const inner = () => {
+        return ++a;
+    };
+
+    return inner;
+})();
+
+console.log(outer()); // 2
+console.log(outer()); // 3
+
+outer = null;
+```
+
+```javascript
+(() => {
+    let interValid = null;
+    let a = 0;
+
+    let inner = () => {
+        if (++a >= 10) {
+            clearInterval(interValid);
+            inner = null;
+        }
+
+        console.log(a);
+    };
+
+    interValid = setInterval(inner, 1000);
+})();
+```
+
+```javascript
+(() => {
+    let count = 0;
+    const button = document.createElement('button');
+
+    button.innerText = 'click';
+
+    let clickHandler = function() {
+        console.log(++count, 'times clicked');
+
+        if (count >= 10) {
+            button.removeEventListener('click', clickHandler);
+            clickHandler = null;
+        }
+    };
+
+    button.addEventListener('click', clickHandler);
+    document.body.appendChild(button);
+})();
 ```
 
 ## 💬 마치며
@@ -133,3 +239,4 @@ inner 함수의 실행 시점에는 outer 함수는 이미 실행이 종료된 �
 클로저는 여러 함수형 언어에서 등장하는 보편적인 특성입니다.
 자바스크립트 고유의 개념이 아니라서 ECMAScript 명세에도 클로저의 정의를 다루지 않고 있고, 그 때문이라고 할 수 없지만 다양한 문헌에서 제각각 클로저를 다르게 정의 및 설명하고 있는 실정입니다.
 더구나 클로저를 설명하는 문장 자체도 이해하기 어려운 단어가 등장하는 경우가 많습니다.
+하지만 클로저는 객체지향과 함수형 모두를 아우르는 매우 중요한 개념이므로 잘 숙지하고 활용하도록 해야 합니다.
