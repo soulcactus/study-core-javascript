@@ -214,3 +214,10 @@ var p5 = new p1.constructor("사람5"); // { name: "사람5" }, true
 ```
 
 p1부터 p5까지는 모두 Person의 인스턴스입니다.
+
+
+## 정리
+
+어떤 생성자 함수를 new 연산자와 함꼐 호출하면 Contructor에서 정의된 내용을 바탕으로 새로운 인스턴스가 생성되는데, 이 인스턴스에는 \_\_proto\_\_라는, Contructor의 prototype 프로퍼티를 참조하는 프로퍼티가 자동으로 부여됩니다. \_\_proto\_\_는 생략 가능한 속성이라서, 인스턴스는 Contructor.prototype의 메서드를 마치 자신의 메서드인 것처럼 호출할 수 있습니다.
+
+Constructor.prototype에는 contructor라는 프로퍼티가 있는데, 이는 다시 생성자 함수 자신을 가리킵니다. 이 프로퍼티는 인스턴스가 자신의 생성자 함수가 무엇인지를 알고자 할 때 필요한 수단입니다.
