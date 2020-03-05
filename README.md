@@ -32,10 +32,10 @@
 ## 📝 Contents
 
 1. 데이터 타입과 변수 ([soulcactus](01_week/part01/README.md) / [hwizzzang](05_week/part01/README.md))
-2. [불변객체와 undefined, null](02_week/part02/README.md) (soulcactus)
+2. 불변객체와 undefined, null ([soulcactus](02_week/part02/README.md) / [hwizzzang](09_week/part02/README.md))
 3. 실행 컨텍스트와 호이스팅 ([hwizzzang](01_week/part03/README.md) / [soulcactus](03_week/part03/README.md))
 4. [스코프와 스코프 체인](04_week/part04/README.md) (soulcactus)
-5. [this](06_week/part05/README.md) (hwizzzang)
+5. this ([hwizzzang](06_week/part05/README.md) / [soulcactus](09_week/part05/README.md))
 6. [콜백함수](02_week/part06/README.md) (hwizzzang)
 7. 클로저 개념 ([hwizzzang](03_week/part07/README.md) / [soulcactus](07_week/part07/README.md))
 8. 클로저 활용 ([hwizzzang](04_week/part08/README.md) / [soulcactus](08_week/part08/README.md))
