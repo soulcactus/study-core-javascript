@@ -273,3 +273,50 @@ console.log(obj2); // { a: 3, b: { c: 4, d: [1, 2] } }
 ```
 
 ## undefined와 null
+
+자바스크립트에는 *없음*을 나타내는 undefined와 null이 있습니다.
+
+undefined는 사용자가 명시적으로 지정할 수도 있지만 값이 존재하지 않을 때 자바스크립트 엔진이 자동으로 부여하는 경우도 있습니다.
+
+자바스크립트 엔진은 사용자가 어떤 값을 지정할 것이라고 예상되는 상황임에도 실제로는 그렇게 하지 않았을 때 undefined를 반환합니다. 밑의 세 경우가 이에 해당합니다.
+
+1. 값을 대입하지 않은 변수, 즉 데이터 영역의 메모리 주소를 지정하지 않은 식별자에 접근할 때
+
+2. 객체 내부의 존재하지 않는 프로퍼티에 접근하려고 할 때
+
+3. return 문이 없거나 호출되지 않는 함수 실행의 결과
+
+```javascript
+// 자동으로 undefined를 부여하는 경우
+var a;
+console.log(a) // (1) undefined. 값을 대입하지 않은 변수에 접근
+
+var obj = { a: 1 };
+console.log(obj['a']); // 1
+console.log(obj['b']); // (2) 존재하지 않는 프로퍼티에 접근=
+console.log(b) // c. ReferenceError : b is not defined
+
+var func = function() {};
+var c = func(); // (3) return 값이 없으면 undefined를 반환한 것으로 간주.
+console.log(c); // undefined
+```
+
+값을 대입하지 않은 경우에 대해 배열의 경우에는 조금 특이한 동작을 합니다. 밑의 예제를 보겠습니다.
+
+```javascript
+var arr1 = [];
+arr1.length = 3;
+console.log(arr1); // [empty x 3];
+
+var arr2 = new Array(3);
+console.log(arr2); // [empty x 3];
+
+var arr3 = [undefined, undefined, undefined];
+console.log(arr3); // [undefined, undefined, undefined]
+```
+
+1번쨰 줄에서 빈 배열을 만들고, 2번쨰 줄에서 배열의 크기를 3으로 했더니 3번째 줄에서 [empty x 3]이 출력됐습니다. 이는 배열에 3개의 빈 요소를 확보했지만 확보된 각 요소에는 문자 그대로 어떤 값도, 심지어 indefined 조차도 할당돼 있지 않음을 의미합니다.
+
+반면 8번째 줄에서는 리터럴 방식으로 배열을 생성하여 각 요소에 undefined를 부여하면 세 개의 세 개의 undefined가 담긴 배열을 반환합니다.
+
+이처럼 *비어있는 요소*와 *undefined*를 할당한 요소는 출력 결과가 다르며, 빈 요소는 배열 메서드의 순회 대상에서 제외됩니다. 밑의 코드를 통해 확인해보겠습니다.
